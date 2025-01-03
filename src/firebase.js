@@ -1,7 +1,11 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
+import { 
+  initializeFirestore, 
+  persistentLocalCache,
+  persistentSingleTabManager
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAKmA4pMrb6yYGoCM-L6_iwsps0Zb1L6v8",
@@ -15,7 +19,21 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-const db = getFirestore(app);
 const auth = getAuth(app);
+
+// Inicializar Firestore com configurações otimizadas
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentSingleTabManager(),
+    cacheSizeBytes: 50 * 1024 * 1024 // 50MB
+  }),
+  experimentalForceLongPolling: true
+});
+
+// Adicionar domínio aos domínios autorizados
+if (process.env.NODE_ENV === 'development') {
+  const currentDomain = window.location.hostname;
+  console.log(`Adicione ${currentDomain} aos domínios autorizados no Firebase Console`);
+}
 
 export { db, auth };
