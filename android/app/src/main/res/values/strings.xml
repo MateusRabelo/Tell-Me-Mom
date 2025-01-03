@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Tell Me Mom</string>
+    <string name="title_activity_main">Tell Me Mom</string>
+    <string name="package_name">com.arkesdev.tellmemom</string>
+    <string name="custom_url_scheme">com.arkesdev.tellmemom</string>
+</resources>
