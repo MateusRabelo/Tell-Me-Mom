@@ -15,4 +15,13 @@ export interface ShoppingItem {
   checked: boolean;
   addedBy: string;
   addedAt: Date;
+}
+
+export interface User {
+  email: string | null;
+  createdAt: string;
+  updatedAt: string;
+  displayName: string;
+  photoURL: string;
+  lists: string[]; // Array de IDs das listas
 } 

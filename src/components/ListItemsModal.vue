@@ -65,7 +65,7 @@ import {
   IonModal, IonHeader, IonToolbar, IonTitle, IonContent,
   IonButton, IonButtons, IonItem, IonInput, IonList,
   IonLabel, IonCheckbox, IonItemSliding, IonItemOptions,
-  IonItemOption, IonIcon, alertController
+  IonItemOption, IonIcon, alertController, IonNote
 } from '@ionic/vue';
 import { close, add, pencil, trash } from 'ionicons/icons';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';

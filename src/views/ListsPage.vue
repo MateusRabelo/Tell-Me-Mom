@@ -88,7 +88,7 @@ import {
   IonSpinner
 } from '@ionic/vue';
 import { add, share, trash, bug, close, pencil } from 'ionicons/icons';
-import { collection, query, where, onSnapshot, addDoc, deleteDoc, doc, updateDoc, arrayUnion, getDocs, getDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, deleteDoc, doc, updateDoc, arrayUnion, getDocs, getDoc, limit } from 'firebase/firestore';
 import { db, auth } from '@/firebase';
 import ListEditModal from '@/components/ListEditModal.vue';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -174,7 +174,20 @@ const shareList = async (listId: string) => {
     const shareEmail = prompt('Digite o email para compartilhar:');
     if (!shareEmail) return;
 
-    // Primeiro, verificar se a lista existe e se o usuário é o dono
+    // Buscar o usuário pelo email primeiro
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', shareEmail), limit(1));
+    const targetUserSnapshot = await getDocs(q);
+
+    if (targetUserSnapshot.empty) {
+      alert('Usuário não encontrado');
+      return;
+    }
+
+    const targetUser = targetUserSnapshot.docs[0];
+    const targetUserId = targetUser.id;
+
+    // Verificar e atualizar a lista
     const listRef = doc(db, 'lists', listId);
     const listDoc = await getDoc(listRef);
     
@@ -183,31 +196,22 @@ const shareList = async (listId: string) => {
       return;
     }
 
-    if (listDoc.data()?.ownerId !== auth.currentUser?.uid) {
+    const listData = listDoc.data();
+    
+    // Verificar se o usuário atual é o dono
+    if (listData.ownerId !== auth.currentUser?.uid) {
       alert('Você não tem permissão para compartilhar esta lista');
       return;
     }
 
-    // Buscar o usuário pelo email
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('email', '==', shareEmail));
-    const targetUserSnapshot = await getDocs(q);
-
-    if (targetUserSnapshot.empty) {
-      alert('Usuário não encontrado');
-      return;
-    }
-
-    const targetUserId = targetUserSnapshot.docs[0].id;
-    
-    // Verificar se já está compartilhado
-    const currentSharedWith = listDoc.data()?.sharedWith || [];
-    if (currentSharedWith.includes(targetUserId)) {
+    // Verificar se já está compartilhada
+    const sharedWith = listData.sharedWith || [];
+    if (sharedWith.includes(targetUserId)) {
       alert('Lista já compartilhada com este usuário');
       return;
     }
 
-    // Atualizar a lista com o novo compartilhamento
+    // Atualizar a lista e o usuário em uma transação
     await updateDoc(listRef, {
       sharedWith: arrayUnion(targetUserId)
     });

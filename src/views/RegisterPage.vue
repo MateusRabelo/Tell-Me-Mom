@@ -42,7 +42,8 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { IonPage, IonContent, IonItem, IonLabel, IonInput, IonButton } from '@ionic/vue';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '@/firebase';
 
 const router = useRouter();
 const email = ref('');
@@ -50,10 +51,31 @@ const password = ref('');
 
 const handleRegister = async () => {
   try {
-    await createUserWithEmailAndPassword(auth, email.value, password.value);
+    const userCredential = await createUserWithEmailAndPassword(
+      auth, 
+      email.value, 
+      password.value
+    );
+
+    await setDoc(doc(db, 'users', userCredential.user.uid), {
+      email: userCredential.user.email,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      displayName: '',
+      photoURL: '',
+      lists: []
+    });
+
     router.push('/tabs/lists');
   } catch (error: any) {
     console.error('Erro no registro:', error.message);
+    if (error.code === 'auth/email-already-in-use') {
+      alert('Este email já está em uso');
+    } else if (error.code === 'auth/weak-password') {
+      alert('A senha deve ter pelo menos 6 caracteres');
+    } else {
+      alert('Erro ao criar conta. Por favor, tente novamente.');
+    }
   }
 };
 
