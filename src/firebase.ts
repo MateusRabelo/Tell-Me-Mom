@@ -22,16 +22,14 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const auth = getAuth(app);
 
-// Inicializar Firestore com configurações otimizadas
 const db: Firestore = initializeFirestore(app, {
   localCache: persistentLocalCache({
     tabManager: persistentSingleTabManager(undefined),
-    cacheSizeBytes: 50 * 1024 * 1024 // 50MB
+    cacheSizeBytes: 50 * 1024 * 1024
   }),
   experimentalForceLongPolling: true
 });
 
-// Adicionar domínio aos domínios autorizados
 if (process.env.NODE_ENV === 'development') {
   const currentDomain = window.location.hostname;
   console.log(`Adicione ${currentDomain} aos domínios autorizados no Firebase Console`);

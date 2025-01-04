@@ -1,11 +1,18 @@
 export interface ShoppingList {
   id: string;
   name: string;
+  isPublic: boolean;
   ownerId: string;
-  createdAt: Date;
-  updatedAt: Date;
-  sharedWith: string[];
-  items: ShoppingItem[];
+  isOwner?: boolean;
+  createdAt: string;
+  updatedAt: string;
+  items: Array<{
+    id: string;
+    text: string;
+    completed: boolean;
+    createdAt: string;
+  }>;
+  sharedWith?: string[];
 }
 
 export interface ShoppingItem {

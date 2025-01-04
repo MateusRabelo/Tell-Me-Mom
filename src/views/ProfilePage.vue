@@ -62,7 +62,6 @@ const updateProfile = async () => {
       });
       // Mostrar mensagem de sucesso
     } catch (error) {
-      // Tratar erro
       console.error('Erro ao atualizar perfil:', error);
     }
   }

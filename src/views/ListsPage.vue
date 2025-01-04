@@ -114,7 +114,6 @@ interface ShoppingList {
 const shoppingLists = ref<ShoppingList[]>([]);
 const loading = ref(true);
 const unsubscribe = ref<(() => void) | null>(null);
-const initialized = ref(false);
 const router = useRouter();
 
 const loadLists = async () => {
