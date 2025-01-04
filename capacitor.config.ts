@@ -1,9 +1,17 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.arkesdev.tellmemom',
+  appId: 'com.tellmemom.app',
   appName: 'Tell Me Mom',
-  webDir: 'public'
+  webDir: 'dist',
+  server: {
+    androidScheme: 'https'
+  },
+  android: {
+    buildOptions: {
+      gradleArgs: ['-PcdvBuildMultipleApks=false']
+    }
+  }
 };
 
 export default config;
