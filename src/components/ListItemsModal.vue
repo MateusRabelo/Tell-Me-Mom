@@ -31,7 +31,7 @@
       <!-- Lista de items -->
       <ion-list>
         <ion-item-sliding v-for="item in sortedItems" :key="item.id">
-          <ion-item>
+          <ion-item :class="{ 'completed': item.completed }">
             <ion-checkbox
               :checked="item.completed"
               @ionChange="toggleItem(item.id)"
@@ -98,11 +98,15 @@ const newItemText = ref('');
 const localItems = ref<ListItem[]>([]);
 
 // Sincronizar items locais quando a lista mudar
-watch(() => props.list?.items, (newItems) => {
-  if (newItems) {
-    localItems.value = [...newItems];
-  }
-}, { immediate: true });
+watch(
+  () => props.list?.items,
+  (newItems) => {
+    if (newItems) {
+      localItems.value = [...newItems];
+    }
+  },
+  { deep: true, immediate: true }
+);
 
 const logFirestore = (operation: string, data: any) => {
   console.log(`[Firestore ${operation}]`, data);
@@ -119,8 +123,7 @@ const addItem = async () => {
   };
 
   try {
-    logFirestore('Adding item', newItem);
-    // Atualizar estado local primeiro
+    // Atualizar estado local primeiro para feedback imediato
     localItems.value = [...localItems.value, newItem];
     
     // Limpar input
@@ -131,11 +134,11 @@ const addItem = async () => {
     await updateDoc(listRef, {
       items: localItems.value
     });
-    logFirestore('Item added successfully', newItem);
     
     emit('listUpdated');
   } catch (error) {
-    logFirestore('Error adding item', error);
+    console.error('Erro ao adicionar item:', error);
+    // Reverter em caso de erro
     localItems.value = localItems.value.filter(item => item.id !== newItem.id);
   }
 };
@@ -144,42 +147,35 @@ const toggleItem = async (itemId: string) => {
   if (!props.list) return;
 
   try {
-    const listRef = doc(db, 'lists', props.list.id);
-    const listDoc = await getDoc(listRef);
-    
-    if (!listDoc.exists()) {
-      console.error('Lista não encontrada');
-      return;
-    }
+    // Encontrar o item no array local
+    const itemIndex = localItems.value.findIndex(item => item.id === itemId);
+    if (itemIndex === -1) return;
 
-    const items = [...props.list.items];
-    const itemIndex = items.findIndex(item => item.id === itemId);
-    
-    if (itemIndex === -1) {
-      console.error('Item não encontrado');
-      return;
-    }
-
-    // Criar uma cópia do item e atualizar o status
+    // Criar uma cópia atualizada do item
     const updatedItem = {
-      ...items[itemIndex],
-      completed: !items[itemIndex].completed
+      ...localItems.value[itemIndex],
+      completed: !localItems.value[itemIndex].completed
     };
-    
-    // Atualizar o array de items
-    items[itemIndex] = updatedItem;
 
-    // Atualizar apenas o campo items
+    // Atualizar o array local imediatamente para feedback instantâneo
+    localItems.value = localItems.value.map(item => 
+      item.id === itemId ? updatedItem : item
+    );
+
+    // Atualizar no Firestore
+    const listRef = doc(db, 'lists', props.list.id);
     await updateDoc(listRef, {
-      items: items
+      items: localItems.value
     });
 
     // Emitir evento de atualização
-    emit('list-updated');
+    emit('listUpdated');
   } catch (error) {
     console.error('Erro ao atualizar item:', error);
-    // Não mostrar alerta para não interromper a experiência do usuário
-    // já que a operação pode ter funcionado mesmo com o erro
+    // Reverter em caso de erro
+    if (props.list) {
+      localItems.value = [...props.list.items];
+    }
   }
 };
 
@@ -256,8 +252,10 @@ const deleteItem = async (item: ListItem) => {
   if (!props.list) return;
 
   try {
+    // Atualizar estado local primeiro
     localItems.value = localItems.value.filter(i => i.id !== item.id);
 
+    // Atualizar Firestore
     const listRef = doc(db, 'lists', props.list.id);
     await updateDoc(listRef, {
       items: localItems.value
@@ -267,7 +265,9 @@ const deleteItem = async (item: ListItem) => {
   } catch (error) {
     console.error('Erro ao deletar item:', error);
     // Reverter em caso de erro
-    localItems.value = [...props.list.items];
+    if (props.list) {
+      localItems.value = [...props.list.items];
+    }
   }
 };
 
@@ -282,9 +282,11 @@ const formatDate = (dateString: string) => {
 
 const sortedItems = computed(() => {
   return [...localItems.value].sort((a, b) => {
+    // Primeiro critério: itens completados vão para o final
     if (a.completed !== b.completed) {
       return a.completed ? 1 : -1;
     }
+    // Segundo critério: ordenar por data de criação (mais recentes primeiro)
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 });
@@ -294,6 +296,9 @@ const sortedItems = computed(() => {
 .line-through {
   text-decoration: line-through;
   color: var(--ion-color-medium);
+  font-style: italic;
+  opacity: 0.7;
+  transition: all 0.3s ease;
 }
 
 .item-date {
@@ -301,11 +306,41 @@ const sortedItems = computed(() => {
   color: var(--ion-color-medium);
 }
 
-.ion-item-sliding {
+ion-item-sliding {
   transition: all 0.3s ease;
 }
 
-.completed {
+/* Adicionar animação suave para a transição */
+ion-item {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Estilo para itens completados */
+ion-item.completed {
+  --ion-item-background: var(--ion-color-light);
+}
+
+/* Estilo para o texto do item completado */
+ion-item.completed ion-label {
+  text-decoration: line-through;
+  color: var(--ion-color-medium);
+  font-style: italic;
   opacity: 0.7;
+}
+
+/* Animação para quando o item é marcado como completado */
+@keyframes slideDown {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.item-sliding-animated {
+  animation: slideDown 0.3s ease;
 }
 </style> 

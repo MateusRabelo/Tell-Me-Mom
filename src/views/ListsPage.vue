@@ -141,7 +141,6 @@ const loadLists = async () => {
       }, 
       (error) => {
         console.error('Erro ao carregar listas:', error);
-        alert('Erro ao carregar listas. Por favor, recarregue a página.');
         loading.value = false;
       }
     );

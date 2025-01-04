@@ -1,0 +1,47 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Função auxiliar para verificar se o usuário está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Função para verificar se o usuário é o dono do documento
+    function isOwner() {
+      return request.auth.uid == resource.data.ownerId;
+    }
+    
+    // Função para verificar se o usuário está na lista de compartilhamento
+    function isSharedWith() {
+      return request.auth.uid in resource.data.sharedWith;
+    }
+    
+    // Função para verificar se o usuário tem acesso total (dono ou compartilhado)
+    function hasFullAccess() {
+      return isOwner() || isSharedWith();
+    }
+    
+    // Regras para a coleção 'lists'
+    match /lists/{listId} {
+      // Permitir leitura se o usuário tiver acesso total
+      allow read: if isAuthenticated() && hasFullAccess();
+      
+      // Permitir criação se o usuário estiver autenticado e definir ele como dono
+      allow create: if isAuthenticated() && 
+                      request.resource.data.ownerId == request.auth.uid;
+      
+      // Permitir atualização para qualquer usuário com acesso total
+      allow update: if isAuthenticated() && hasFullAccess();
+      
+      // Permitir exclusão para qualquer usuário com acesso total
+      allow delete: if isAuthenticated() && hasFullAccess();
+    }
+    
+    // Regras para a coleção 'users'
+    match /users/{userId} {
+      // Usuários só podem ler/escrever seus próprios dados
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+  }
+} 
