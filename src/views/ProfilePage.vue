@@ -46,7 +46,8 @@ import {
 import { personCircle } from 'ionicons/icons';
 import { auth } from '@/firebase';
 import { useRouter } from 'vue-router';
-import { signOut, updateProfile } from 'firebase/auth';
+import { signOut } from 'firebase/auth';
+import { updateProfile as firebaseUpdateProfile } from 'firebase/auth';
 
 const router = useRouter();
 const user = ref(auth.currentUser);
@@ -56,7 +57,7 @@ const email = ref(user.value?.email || '');
 const updateProfile = async () => {
   if (user.value) {
     try {
-      await updateProfile(user.value, {
+      await firebaseUpdateProfile(user.value, {
         displayName: displayName.value
       });
       // Mostrar mensagem de sucesso

@@ -1,4 +1,4 @@
-package com.arkesdev.tellmemom;
+package com.tellmemom.app;
 
 import com.getcapacitor.BridgeActivity;
 

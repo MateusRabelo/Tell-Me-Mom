@@ -100,6 +100,7 @@ interface ShoppingList {
   name: string;
   isPublic: boolean;
   ownerId: string;
+  isOwner?: boolean;
   createdAt: string;
   updatedAt: string;
   items: Array<{

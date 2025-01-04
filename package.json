@@ -4,8 +4,10 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "vite --host",
-    "build": "vue-tsc && vite build",
+    "clean": "rimraf node_modules package-lock.json",
+    "dev": "vite",
+    "build": "npm run clean:dist && vue-tsc && vite build",
+    "clean:dist": "rimraf dist",
     "preview": "vite preview",
     "test:e2e": "cypress run",
     "test:unit": "vitest",
