@@ -1,15 +1,9 @@
-import { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.tellmemom.app',
   appName: 'Tell Me Mom',
-  webDir: 'dist',
-  server: {
-    androidScheme: 'https'
-  },
-  android: {
-    path: 'android'
-  }
+  webDir: 'dist'
 };
 
 export default config;
