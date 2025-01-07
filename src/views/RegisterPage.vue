@@ -3,6 +3,12 @@
     <ion-content>
       <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
         <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+          <div class="flex flex-col items-center gap-4">
+            <!-- SVG Logo -->
+            <div class="w-24 h-24" v-html="logoSvg"></div>
+            <h1 class="text-3xl font-bold text-primary">Tell Me Mom</h1>
+          </div>
+          
           <h2 class="mt-10 text-center text-2xl font-bold leading-9">
             Criar conta
           </h2>
@@ -25,7 +31,7 @@
             </div>
           </form>
 
-          <p class="mt-10 text-center text-sm text-gray-500">
+          <p class="flex justify-center items-center mt-10 text-center text-sm text-gray-500">
             Já tem uma conta?
             <ion-button fill="clear" @click="goToLogin">
               Entrar
@@ -44,6 +50,7 @@ import { IonPage, IonContent, IonItem, IonLabel, IonInput, IonButton } from '@io
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/firebase';
+import { logoSvg } from '@/assets/logo';
 
 const router = useRouter();
 const email = ref('');

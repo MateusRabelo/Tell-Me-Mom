@@ -3,7 +3,12 @@
     <ion-content>
       <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
         <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-          <h2 class="mt-10 text-center text-2xl font-bold leading-9">
+          <div class="flex flex-col items-center gap-4">
+            <div class="w-24 h-24" v-html="logoSvg"></div>
+            <h1 class="text-3xl font-bold text-primary">Tell Me Mom</h1>
+          </div>
+          
+          <h2 class="mt-10 text-center text-2xl font-bold">
             Entre na sua conta
           </h2>
         </div>
@@ -33,9 +38,9 @@
             </div>
           </form>
 
-          <p class="mt-10 text-center text-sm text-gray-500">
+          <p class="flex justify-center items-center mt-10 text-center text-sm text-gray-500">
             Não tem uma conta?
-            <ion-button fill="clear" @click="goToRegister">
+            <ion-button class="text-blue-500" fill="clear" @click="goToRegister">
               Registre-se
             </ion-button>
           </p>
@@ -54,6 +59,7 @@ import {
 } from '@ionic/vue';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/firebase';
+import { logoSvg } from '@/assets/logo';
 
 const router = useRouter();
 const email = ref('');
