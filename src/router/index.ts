@@ -46,18 +46,19 @@ const router = createRouter({
   routes
 })
 
-// Proteção de rotas
+// Proteção de rotas simplificada
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const isAuthenticated = auth.currentUser;
+  const currentUser = auth.currentUser;
+  const rememberMe = localStorage.getItem('rememberMe') === 'true';
 
-  if (requiresAuth && !isAuthenticated) {
+  if (requiresAuth && !currentUser) {
     next('/login');
-  } else if (!requiresAuth && isAuthenticated && to.path === '/login') {
+  } else if (currentUser && rememberMe && (to.path === '/login' || to.path === '/register')) {
     next('/tabs/lists');
   } else {
     next();
   }
 });
 
-export default router
+export default router;
